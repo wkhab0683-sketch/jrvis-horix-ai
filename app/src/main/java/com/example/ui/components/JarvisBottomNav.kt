@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Memory
@@ -44,6 +46,8 @@ fun JarvisBottomNav(
     val items = listOf(
         NavItem(JarvisTab.CORE, "CORE", Icons.Default.Psychology, "nav_core"),
         NavItem(JarvisTab.AGENDA, "AGENDA", Icons.Default.CalendarToday, "nav_agenda"),
+        NavItem(JarvisTab.STUDIO, "STUDIO", Icons.Default.AutoAwesome, "nav_studio"),
+        NavItem(JarvisTab.CHATBOT, "CHAT", Icons.AutoMirrored.Filled.Chat, "nav_chatbot"),
         NavItem(JarvisTab.SYSTEM, "SYSTEM", Icons.Default.Memory, "nav_system"),
         NavItem(JarvisTab.SYNC, "DEVICES", Icons.Default.Devices, "nav_sync")
     )
@@ -66,14 +70,14 @@ fun JarvisBottomNav(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 },
                 label = {
                     Text(
                         text = item.label,
-                        fontSize = 11.sp,
-                        letterSpacing = 0.5.sp
+                        fontSize = 10.sp,
+                        letterSpacing = 0.3.sp
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(

@@ -23,11 +23,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.RecordVoiceOver
@@ -36,6 +38,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -60,12 +63,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
+import com.example.data.auth.AuthState
 import com.example.ui.JarvisViewModel
 import com.example.ui.theme.JarvisBackgroundDark
 import com.example.ui.theme.JarvisCardBorder
 import com.example.ui.theme.JarvisCyan
 import com.example.ui.theme.JarvisGold
 import com.example.ui.theme.JarvisGreen
+import com.example.ui.theme.JarvisRed
 import com.example.ui.theme.JarvisSurfaceDark
 import com.example.ui.theme.JarvisSurfaceVariantDark
 import com.example.ui.theme.JarvisTextPrimary
@@ -80,7 +86,9 @@ fun MultiDeviceSyncScreen(
 ) {
     val context = LocalContext.current
     val voiceEnabled by viewModel.speechManager.voiceEnabled.collectAsState()
+    val authState by viewModel.authState.collectAsState()
     var customKeyInput by remember { mutableStateOf("") }
+    val databaseId = remember { context.getString(R.string.firestore_database_id) }
 
     LazyColumn(
         modifier = modifier
@@ -94,19 +102,183 @@ fun MultiDeviceSyncScreen(
 
             Column {
                 Text(
-                    text = "CROSS-DEVICE ACCESSIBILITY HUB",
+                    text = "IDENTITY & CLOUD PERSISTENCE HUB",
                     style = MaterialTheme.typography.titleMedium,
                     color = JarvisCyan
                 )
                 Text(
-                    text = "PUBLISHED MULTI-DEVICE ACCESSIBILITY ARRAY",
+                    text = "FIREBASE AUTH • FIRESTORE • MULTI-DEVICE",
                     style = MaterialTheme.typography.labelSmall,
                     color = JarvisTextSecondary
                 )
             }
         }
 
-        // Section 1: Published Live Link Card
+        // Section 1: Firebase Authentication (Google Sign-In) & Firestore Persistence
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("auth_persistence_card"),
+                colors = CardDefaults.cardColors(containerColor = JarvisSurfaceDark),
+                shape = RoundedCornerShape(12.dp),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(
+                        if (authState is AuthState.Authenticated) JarvisGreen else JarvisCyan
+                    )
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (authState is AuthState.Authenticated) Icons.Default.CloudDone else Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = if (authState is AuthState.Authenticated) JarvisGreen else JarvisGold,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "STARK CLOUD DATABASE & AUTH",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (authState is AuthState.Authenticated) JarvisGreen else JarvisGold,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (authState is AuthState.Authenticated) JarvisGreen.copy(alpha = 0.2f)
+                                    else Color(0xFF2C2210)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (authState is AuthState.Authenticated) "SECURE SYNC" else "LOCAL ONLY",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (authState is AuthState.Authenticated) JarvisGreen else JarvisGold,
+                                fontSize = 9.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    when (val state = authState) {
+                        is AuthState.Authenticated -> {
+                            val user = state.user
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape)
+                                        .background(JarvisCyan.copy(alpha = 0.2f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = null,
+                                        tint = JarvisCyan,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = user.displayName ?: "Authenticated Operator",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = JarvisTextPrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = user.email ?: "",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = JarvisCyan
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = "Cloud Firestore Database: $databaseId",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = JarvisTextSecondary,
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedButton(
+                                onClick = { viewModel.signOut() },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = JarvisRed),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, JarvisRed.copy(alpha = 0.5f)),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("sign_out_button")
+                            ) {
+                                Text("SIGN OUT OF STARK SESSION", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            }
+                        }
+
+                        is AuthState.Authenticating -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(color = JarvisCyan, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Verifying Google Identity credentials...", color = JarvisCyan, fontSize = 12.sp)
+                            }
+                        }
+
+                        else -> {
+                            Text(
+                                text = "Sign in with your Google Account to synchronize your schedules, AI creations (music, images, videos), and chat logs securely to Cloud Firestore.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = JarvisTextSecondary
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = { viewModel.signInWithGoogle() },
+                                colors = ButtonDefaults.buttonColors(containerColor = JarvisCyan),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(46.dp)
+                                    .testTag("sign_in_google_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = Color.Black
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "SIGN IN WITH GOOGLE",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Section 2: Global Published Link Card
         item {
             Card(
                 modifier = Modifier
@@ -147,10 +319,10 @@ fun MultiDeviceSyncScreen(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "LIVE & READY",
+                                text = "ACCESSIBLE ANYWHERE",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = JarvisGreen,
-                                fontSize = 10.sp
+                                fontSize = 9.sp
                             )
                         }
                     }
@@ -158,14 +330,13 @@ fun MultiDeviceSyncScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Access your full J.A.R.V.I.S. interface, voice control, scheduling, and device telemetry from any mobile phone, tablet, laptop, or desktop browser via this published cloud endpoint:",
+                        text = "Access your full J.A.R.V.I.S. interface, voice control, scheduling, and generative AI matrix from any device via this published endpoint:",
                         style = MaterialTheme.typography.bodyMedium,
                         color = JarvisTextPrimary
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Published Link Text Box
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -179,7 +350,7 @@ fun MultiDeviceSyncScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = JarvisCyan,
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         )
                     }
 
@@ -203,12 +374,7 @@ fun MultiDeviceSyncScreen(
                                 .weight(1f)
                                 .testTag("copy_published_link_button")
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Copy",
-                                tint = Color.Black,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "Copy", tint = Color.Black, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("COPY LINK", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
@@ -228,12 +394,7 @@ fun MultiDeviceSyncScreen(
                                 .testTag("open_published_link_button"),
                             border = androidx.compose.foundation.BorderStroke(1.dp, JarvisCyan)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.OpenInBrowser,
-                                contentDescription = "Open",
-                                tint = JarvisCyan,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Icon(imageVector = Icons.Default.OpenInBrowser, contentDescription = "Open", tint = JarvisCyan, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("LAUNCH", color = JarvisCyan, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
@@ -242,51 +403,7 @@ fun MultiDeviceSyncScreen(
             }
         }
 
-        // Section 2: Connected Ecosystem Devices Array
-        item {
-            Text(
-                text = "// SYNCHRONIZED HARDWARE MATRIX",
-                style = MaterialTheme.typography.labelSmall,
-                color = JarvisTextSecondary
-            )
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                DeviceSyncRow(
-                    icon = Icons.Default.PhoneAndroid,
-                    deviceName = "Primary Android Device",
-                    deviceType = "Host System • Real-Time Hardware Sensor Array",
-                    status = "CONNECTED (PRIMARY)",
-                    statusColor = JarvisGreen
-                )
-                DeviceSyncRow(
-                    icon = Icons.Default.TabletMac,
-                    deviceName = "Stark Tactical Tablet",
-                    deviceType = "Secondary HUD Terminal (Web / PWA)",
-                    status = "STANDBY",
-                    statusColor = JarvisCyan
-                )
-                DeviceSyncRow(
-                    icon = Icons.Default.Computer,
-                    deviceName = "Lab Workstation & Laptop",
-                    deviceType = "Command Console Browser Link",
-                    status = "ONLINE VIA WEB LINK",
-                    statusColor = JarvisGold
-                )
-            }
-        }
-
-        // Section 3: Speech & Synthesis Configuration
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "// ACOUSTIC SPEECH & VOCAL FEEDBACK",
-                style = MaterialTheme.typography.labelSmall,
-                color = JarvisTextSecondary
-            )
-        }
-
+        // Section 3: Speech Synthesis
         item {
             Card(
                 modifier = Modifier
@@ -305,19 +422,9 @@ fun MultiDeviceSyncScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.RecordVoiceOver,
-                                contentDescription = null,
-                                tint = JarvisCyan,
-                                modifier = Modifier.size(18.dp)
-                            )
+                            Icon(imageVector = Icons.Default.RecordVoiceOver, contentDescription = null, tint = JarvisCyan, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Jarvis Voice Synthesis",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = JarvisTextPrimary,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Text("Jarvis Voice Synthesis", style = MaterialTheme.typography.bodyLarge, color = JarvisTextPrimary, fontWeight = FontWeight.SemiBold)
                         }
 
                         Switch(
@@ -339,33 +446,11 @@ fun MultiDeviceSyncScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = JarvisTextSecondary
                     )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Button(
-                        onClick = {
-                            viewModel.speechManager.speak("Systems operational, sir. Speech synthesis frequency is verified and optimal.")
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = JarvisSurfaceVariantDark),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.testTag("test_voice_button")
-                    ) {
-                        Text("TEST VOCAL OUTPUT", color = JarvisCyan, fontSize = 11.sp)
-                    }
                 }
             }
         }
 
         // Section 4: Gemini AI Neural Uplink Configuration
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "// NEURAL UPLINK (GEMINI AI AGENT)",
-                style = MaterialTheme.typography.labelSmall,
-                color = JarvisTextSecondary
-            )
-        }
-
         item {
             Card(
                 modifier = Modifier
@@ -379,30 +464,12 @@ fun MultiDeviceSyncScreen(
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Key,
-                            contentDescription = null,
-                            tint = JarvisGold,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(imageVector = Icons.Default.Key, contentDescription = null, tint = JarvisGold, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Gemini Neural API Credential",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = JarvisTextPrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Text("Gemini Neural API Credential", style = MaterialTheme.typography.bodyLarge, color = JarvisTextPrimary, fontWeight = FontWeight.SemiBold)
                     }
 
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "Configured via AI Studio Secrets Panel (or enter custom key below for local override):",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = JarvisTextSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
                         value = customKeyInput,
@@ -442,78 +509,6 @@ fun MultiDeviceSyncScreen(
 
         item {
             Spacer(modifier = Modifier.height(30.dp))
-        }
-    }
-}
-
-@Composable
-fun DeviceSyncRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    deviceName: String,
-    deviceType: String,
-    status: String,
-    statusColor: Color
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = JarvisSurfaceDark),
-        shape = RoundedCornerShape(10.dp),
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(JarvisCardBorder)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF131F33)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = JarvisCyan,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = deviceName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = JarvisTextPrimary,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = deviceType,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = JarvisTextSecondary
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .clip(CircleShape)
-                        .background(statusColor)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = status,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = statusColor,
-                    fontSize = 10.sp
-                )
-            }
         }
     }
 }

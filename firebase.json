@@ -1,0 +1,8 @@
+{
+  "firestore": [
+    {
+      "database": "ai-studio-android-jarvisai-bfa7546d-2edf-49c5-8229-8a513cfebf11",
+      "rules": "firestore.rules"
+    }
+  ]
+}

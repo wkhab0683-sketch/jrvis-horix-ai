@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">JARVIS</string>
+    <string name="default_web_client_id" translatable="false">297263488185-9uar7h279og4viq61kl7chkd561jgtoq.apps.googleusercontent.com</string>
 </resources>

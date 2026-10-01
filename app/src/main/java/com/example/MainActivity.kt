@@ -18,7 +18,9 @@ import com.example.ui.JarvisViewModel
 import com.example.ui.components.JarvisBottomNav
 import com.example.ui.components.JarvisTopAppBar
 import com.example.ui.screens.AgendaScreen
+import com.example.ui.screens.ChatbotConsoleScreen
 import com.example.ui.screens.CoreHudScreen
+import com.example.ui.screens.GenerativeStudioScreen
 import com.example.ui.screens.MultiDeviceSyncScreen
 import com.example.ui.screens.SystemDiagnosticsScreen
 import com.example.ui.theme.MyApplicationTheme
@@ -70,6 +72,14 @@ fun JarvisApp(
                 modifier = Modifier.padding(innerPadding)
             )
             JarvisTab.AGENDA -> AgendaScreen(
+                viewModel = viewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
+            JarvisTab.STUDIO -> GenerativeStudioScreen(
+                viewModel = viewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
+            JarvisTab.CHATBOT -> ChatbotConsoleScreen(
                 viewModel = viewModel,
                 modifier = Modifier.padding(innerPadding)
             )
